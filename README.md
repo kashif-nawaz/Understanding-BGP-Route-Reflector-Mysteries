@@ -127,4 +127,4 @@ prod.inet.0: 6 destinations, 15 routes (6 active, 0 holddown, 0 hidden)
      Communities: target:65000:100
 ```
 
-CLuster ID and Origin ID is not set by RR i.e PE3 while sending 100.100.251.0/24 to eBGP peer towards CE2.
+Cluster ID and Origin ID is not set by RR i.e PE3 while sending 100.100.251.0/24 to eBGP peer towards CE2.

@@ -46,5 +46,86 @@ prod.inet.0: 5 destinations, 18 routes (5 active, 0 holddown, 0 hidden)
      AS path: [65000] I 
      Communities: target:65000:100
 ```
-Once the PE6 subnet i.e100.100.251.0/24 is is receievd on it's RR i.e (PE3 and PE4) that subnet has to be sent to US West Coast RR i.e (PE1 and PE2) as there is full mesh iBGP sessions are configured between US East Cosst RRs  and US West Coast RR .  US East Coast RRs will set cluster ID and Origin ID attributes with PE6 subnet, cluster ID value would be what ever is configured on US East Coas RRs and Origin ID would be vlaue of PE6 loopback IP (which is originator of the route). 
+Once the PE6 subnet i.e 100.100.251.0/24 is is receievd on it's RR i.e (PE3 and PE4) that subnet has to be sent to US West Coast RR i.e (PE1 and PE2) as there is full mesh iBGP sessions are configured between US East Cosst RRs  and US West Coast RR .  US East Coast RRs will set cluster ID and Origin ID attributes with PE6 subnet, cluster ID value would be what ever is configured on US East Coas RRs and Origin ID would be vlaue of PE6 loopback IP (which is originator of the route). 
 
+
+``
+
+root@PE3> show bgp summary group rr-client 
+
+Threading mode: BGP I/O
+Default eBGP mode: advertise - accept, receive - accept
+Groups: 3 Peers: 5 Down peers: 0
+Table          Tot Paths  Act Paths Suppressed    History Damp State    Pending
+bgp.l3vpn.0          
+                      10          7          0          0          0          0
+bgp.evpn.0           
+                       1          1          0          0          0          0
+Peer                     AS      InPkt     OutPkt    OutQ   Flaps Last Up/Dwn State|#Active/Received/Accepted/Damped...
+172.172.172.14        65000       2469     135469       1       0    18:31:15 Establ
+  bgp.l3vpn.0: 1/1/1/0
+  prod.inet.0: 1/1/1/0
+
+
+root@PE3> show route receive-protocol bgp 172.172.172.14 extensive table prod.inet.0 
+prod.inet.0: 6 destinations, 15 routes (6 active, 0 holddown, 0 hidden)
+* 100.100.251.0/24 (1 entry, 1 announced)
+     Import Accepted
+     Route Distinguisher: 172.172.172.14:65000
+     VPN Label: 16
+     Nexthop: 172.172.172.14
+     Localpref: 100
+     AS path: I 
+     Communities: target:65000:100
+
+```
+
+We can see that on PE3 (which is one of the RRs in US East Cost), subnet 100.100.251.0/24 is being received from 172.172.172.14, i.e., PE6. Now let's analyse how this route is being re-advertised to eBGP peer and IBGP peer. First, let's analyse IBGP peer re-advertising.
+
+
+```
+root@PE3> show route advertising-protocol bgp 172.172.172.1 table bgp.l3vpn.0 next-hop 172.172.172.14 extensive 
+
+bgp.l3vpn.0: 8 destinations, 11 routes (8 active, 0 holddown, 0 hidden)
+* 172.172.172.14:65000:100.100.251.0/24 (1 entry, 1 announced)
+ BGP group mpls-bb type Internal
+     Route Distinguisher: 172.172.172.14:65000
+     VPN Label: 17
+     Nexthop: 172.172.172.14
+     Localpref: 100
+     AS path: [65000] I 
+     Communities: target:65000:100
+     Cluster ID: 2.2.2.2
+     Originator ID: 172.172.172.14
+
+```
+We can see that PE3 will is adding Cluster ID i.e 2.2.2.2 and Originator ID i.e 172.172.172.14 while re-advertising subnet 100.100.251.0/2 to one of it's IBGP peer i.e 172.172.172.1. Now let's inspect same route being re-advertised by PE3 to CE2 over eBPG peering.
+
+
+```
+root@PE3> show bgp summary group to-CE
+
+Threading mode: BGP I/O
+Default eBGP mode: advertise - accept, receive - accept
+Groups: 3 Peers: 5 Down peers: 0
+Table          Tot Paths  Act Paths Suppressed    History Damp State    Pending
+bgp.l3vpn.0          
+                      10          7          0          0          0          0
+bgp.evpn.0           
+                       1          1          0          0          0          0
+Peer                     AS      InPkt     OutPkt    OutQ   Flaps Last Up/Dwn State|#Active/Received/Accepted/Damped...
+100.100.100.4         65110       3257       3114       0       1  1d 0:28:24 Establ
+  prod.inet.0: 1/1/1/0
+
+
+root@PE3> show route advertising-protocol bgp 100.100.100.4 match-prefix 100.100.251.0/24 extensive 
+
+prod.inet.0: 6 destinations, 15 routes (6 active, 0 holddown, 0 hidden)
+* 100.100.251.0/24 (1 entry, 1 announced)
+ BGP group to-CE1 type External
+     Nexthop: Self
+     AS path: [65000] I 
+     Communities: target:65000:100
+```
+
+CLuster ID and Origin ID is not set by RR i.e PE3 while sending 100.100.251.0/24 to eBGP peer towards CE2.

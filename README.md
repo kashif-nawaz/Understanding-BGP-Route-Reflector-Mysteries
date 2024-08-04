@@ -49,8 +49,7 @@ prod.inet.0: 5 destinations, 18 routes (5 active, 0 holddown, 0 hidden)
 Once the PE6 subnet i.e 100.100.251.0/24 is is receievd on it's RR i.e (PE3 and PE4) that subnet has to be sent to US West Coast RR i.e (PE1 and PE2) as there is full mesh iBGP sessions are configured between US East Cosst RRs  and US West Coast RR .  US East Coast RRs will set cluster ID and Origin ID attributes with PE6 subnet, cluster ID value would be what ever is configured on US East Coas RRs and Origin ID would be vlaue of PE6 loopback IP (which is originator of the route). 
 
 
-``
-
+```
 root@PE3> show bgp summary group rr-client 
 
 Threading mode: BGP I/O

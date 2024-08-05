@@ -85,7 +85,7 @@ prod.inet.0: 6 destinations, 15 routes (6 active, 0 holddown, 0 hidden)
 
 ```
 
-We can see that on PE3 (which is one of the RRs in US East Cost), subnet 100.100.251.0/24 is being received from 172.172.172.14, i.e., PE6. Now let's analyse how this route is being re-advertised to eBGP peer and IBGP peer. First, let's analyse IBGP peer re-advertising.
+In above snippet, we can see that on PE3 (which is one of the RRs in US East Cost), subnet 100.100.251.0/24 is being received from 172.172.172.14, i.e., PE6. Now let's analyse how this route is being re-advertised to eBGP peer and IBGP peer. First, let's analyse IBGP peer re-advertising.
 
 
 ```
@@ -104,7 +104,7 @@ bgp.l3vpn.0: 8 destinations, 11 routes (8 active, 0 holddown, 0 hidden)
      Originator ID: 172.172.172.14
 
 ```
-We can see that PE3 will is adding Cluster ID i.e 2.2.2.2 and Originator ID i.e 172.172.172.14 while re-advertising subnet 100.100.251.0/2 to one of it's IBGP peer i.e 172.172.172.1. Now let's inspect same route being re-advertised by PE3 to CE2 over eBPG peering.
+In above snippet , we can see that PE3  is adding Cluster ID i.e 2.2.2.2 and Originator ID i.e 172.172.172.14 while re-advertising subnet 100.100.251.0/2 to one of it's IBGP peer i.e 172.172.172.1. Now let's inspect same route being re-advertised by PE3 to CE2 over eBPG peering.
 
 
 ```
@@ -133,4 +133,42 @@ prod.inet.0: 6 destinations, 15 routes (6 active, 0 holddown, 0 hidden)
      Communities: target:65000:100
 ```
 
-We can see that Cluster ID and Origin ID are not set by RR i.e PE3 while sending subnet 100.100.251.0/24 to eBGP peer towards CE2.
+In above snippet, we can see that Cluster ID and Origin ID are not set by RR i.e PE3 while sending subnet 100.100.251.0/24 to eBGP peer towards CE2.
+
+
+```
+root@PE3> show route advertising-protocol bgp 172.172.172.10 table bgp.l3vpn.0 extensive 
+
+bgp.l3vpn.0: 8 destinations, 11 routes (8 active, 0 holddown, 0 hidden)
+* 172.172.172.9:100:100.100.253.0/24 (1 entry, 1 announced)
+ BGP group mpls-bb type Internal
+     Route Distinguisher: 172.172.172.9:100
+     VPN Label: 42972
+     Nexthop: Self
+     Flags: Nexthop Change
+     Localpref: 100
+     AS path: [65000] 65110 I 
+     Communities: target:65000:100
+
+* 172.172.172.14:65000:100.100.251.0/24 (1 entry, 1 announced)
+ BGP group mpls-bb type Internal
+     Route Distinguisher: 172.172.172.14:65000
+     VPN Label: 17
+     Nexthop: 172.172.172.14
+     Localpref: 100
+     AS path: [65000] I 
+     Communities: target:65000:100
+     Cluster ID: 2.2.2.2
+     Originator ID: 172.172.172.14
+
+
+root@PE4> show route receive-protocol bgp 172.172.172.9 table bgp.l3vpn.0 
+
+bgp.l3vpn.0: 8 destinations, 11 routes (8 active, 0 holddown, 0 hidden)
+  Prefix                  Nexthop              MED     Lclpref    AS path
+  172.172.172.9:100:100.100.253.0/24                    
+*                         172.172.172.9                100        65110 I
+```
+
+In the above snippet, we can see that PE3 is sending two routes towards PE4 (i.e., 2nd RR in US East Cost). With the prefix 172.172.172.14:65000:100.100.251.0/24.  Cluster ID and Originator ID are set by PE3. Now if we re-call Originator ID, 172.172.172.14 is the router ID of PE6, which is the originator of subnet 100.100.251.0/24 and RR Client to both PE3 and PE4. Now if we look at PE4 for routes received from PE3, we don't see prefix 172.172.172.14:65000:100.100.251.0/24 being received on PE4, even though it's re-advertised by PE3 towards PE4. Any guess why it is not being received on PE4? because PE3 sets Cluster ID, i.e., 2.2.2.2, which is equal to the Cluter ID configured on PE4, so PE4 will discard it, hence the receiving route has a cluster ID that matches its Cluter ID.
+ 

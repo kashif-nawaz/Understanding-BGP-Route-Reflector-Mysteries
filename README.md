@@ -7,8 +7,8 @@ In this blog we will learn the functionality of BGP Route Reflectors (RR) and BG
 
 ## BGP Attributes Adjusted by RR
 * From IBGP learned routes , RR sets the Cluster ID and Origin ID before sending those routes to non-client IBGP peers or RR Client peers. 
-* Cluster ID and Origin ID is not for eBGP learned routes or static/ direct routes being re-distribuited by RR to non-client IBGP peer or Client IBPG peer . 
-* Cluster ID and Origin ID are not set by the RR while sending it to eBGP peers.
+* Cluster ID and Origin ID are not set for eBGP learned routes or static/ direct routes being re-distribuited by RR to non-client IBGP peer or Client IBPG peer . 
+* Cluster ID and Origin ID are not set by the RR while sending routes to eBGP peers.
 
 ## Loop Avoidance Mechansim 
 * If a router receives a route that has an origin ID equivalent to its receiving router ID, then that route will be discarded.

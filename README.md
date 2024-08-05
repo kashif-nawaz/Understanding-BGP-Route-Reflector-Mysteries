@@ -4,9 +4,15 @@ In this blog we will learn the functionality of BGP Route Reflectors (RR) and BG
 ## BGP Route Reflection Rules 
 * Any route received by RR client is re-advertised to non-client iBPG Peers, eBPG peers and other RR clients.. 
 * Any route received by non-client IBGP Peer or eBGP peers will be re-advertised to non-client iBGP peers  , other eBGP peers and RR clients. 
+
 ## BGP Attributes Adjusted by RR
-* Cluster ID and Origin ID are set by the RR, with routes being received on the RR before sending them to non-client IBGP peers or RR Client peers. 
-* Cluster ID and Origin ID are not set by the RR, with routes being received on the RR while sending it to eBGP peers.
+* From IBGP learned routes , RR sets the Cluster ID and Origin ID before sending those routes to non-client IBGP peers or RR Client peers. 
+* Cluster ID and Origin ID is not for eBGP learned routes or static/ direct routes being re-distribuited by RR to non-client IBGP peer or Client IBPG peer . 
+* Cluster ID and Origin ID are not set by the RR while sending it to eBGP peers.
+
+## Loop Avoidance Mechansim 
+* If a router receives a route that has an origin ID equivalent to its receiving router ID, then that route will be discarded.
+*  If a RR receives a route that Cluster ID  as per receiving RR Cluster ID then that route will be discarded. 
 
 ## Lab Topolopy 
 Our lab topology is as under:-

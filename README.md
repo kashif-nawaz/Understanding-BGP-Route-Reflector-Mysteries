@@ -1,8 +1,8 @@
 # Understanding-BGP-Route-Reflector-Mysteries
-In this blog we will learn the functionality of BGP Route Reflectors (RR) and BGP attributes set by RR while sending BGP updates. BGP RR are used to avoid need of having full mesh IBGP peers thus helps in network scalability  and besides that RR sets BGP attributes which are inspected by receiving  router to avoid network loops. 
+In this blog we will learn the functionality of BGP Route Reflectors (RR) and BGP attributes set by RR while sending BGP updates. BGP RR is used to avoid need of having full mesh IBGP peers thus helps in network scalability  and besides that RR sets BGP attributes which are inspected by receiving  router to avoid network loops. 
 
 ## BGP Route Reflection Rules 
-* Any route received from RR client is re-advertised to non-client iBPG Peers, eBPG peers and other RR clients.. 
+* Any route received from RR client is re-advertised to non-client iBPG Peers, eBPG peers and other RR clients.
 * Any route received by non-client IBGP Peer or eBGP peers will be re-advertised to non-client iBGP peers  , other eBGP peers and RR clients. 
 
 ## BGP Attributes Adjusted by RR

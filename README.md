@@ -1,8 +1,8 @@
 # Understanding-BGP-Route-Reflector-Mysteries
-In this blog we will learn the functionality of BGP Route Reflectors (RR) and BGP attributes set by RR while sending BGP updates. BGP RR are used to avoid need of having full mesh IBGP peers thus helps in network scalability  and besides that RR sets BGP attributes which are inspected by receiving  router to avoid network loops. 
+In this blog we will learn the functionality of BGP Route Reflectors (RR) and BGP attributes set by RR while sending BGP updates. BGP RR is used to avoid need of having full mesh IBGP peers thus helps in network scalability  and besides that RR sets BGP attributes which are inspected by receiving  router to avoid network loops. 
 
 ## BGP Route Reflection Rules 
-* Any route received from RR client is re-advertised to non-client iBPG Peers, eBPG peers and other RR clients.. 
+* Any route received from RR client is re-advertised to non-client iBPG Peers, eBPG peers and other RR clients.
 * Any route received by non-client IBGP Peer or eBGP peers will be re-advertised to non-client iBGP peers  , other eBGP peers and RR clients. 
 
 ## BGP Attributes Adjusted by RR
@@ -171,4 +171,3 @@ bgp.l3vpn.0: 8 destinations, 11 routes (8 active, 0 holddown, 0 hidden)
 ```
 
 In the above snippet, we can see that PE3 is sending two routes towards PE4 (i.e., 2nd RR in US East Cost). With the prefix 172.172.172.14:65000:100.100.251.0/24.  Cluster ID and Originator ID are set by PE3. Now if we re-call Originator ID, 172.172.172.14 is the router ID of PE6, which is the originator of subnet 100.100.251.0/24 and RR Client to both PE3 and PE4. Now if we look at PE4 for routes received from PE3, we don't see prefix 172.172.172.14:65000:100.100.251.0/24 being received on PE4, even though it's re-advertised by PE3 towards PE4. Any guess why it is not being received on PE4? because PE3 sets Cluster ID, i.e., 2.2.2.2, which is equal to the Cluter ID configured on PE4, so PE4 will discard it, hence the receiving route has a cluster ID that matches its Cluter ID.
- 
